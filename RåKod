@@ -54,7 +54,7 @@ import java.awt.event.ActionListener;
 public class Simulering extends JPanel {
 
     int RadieSol = 15;
-    int RadieJord = 3;
+    int RadieJord = 2;
     double XJord;
     double YJord;
     long Avstandstart = 149598023000L;
@@ -129,8 +129,8 @@ public class Simulering extends JPanel {
 
         g2.setColor(Color.GREEN);
         g2.setStroke(new BasicStroke(1));
-        g2.drawOval(getWidth() / 2  - 82, getHeight() / 2 - 82, 82*2, 82*2);
-        g2.drawOval(getWidth() / 2  - 110, getHeight() / 2 - 110, 220, 220);
+        g2.drawOval(getWidth() / 2  - 95, getHeight() / 2 - 95, 190, 190);
+        g2.drawOval(getWidth() / 2  - 102, getHeight() / 2 - 102, 204, 204);
 
     }
 

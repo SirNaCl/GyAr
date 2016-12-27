@@ -1,0 +1,190 @@
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.*;
+
+/**
+ * Created by Emil on 2016-12-15.
+ */
+
+public class Huvudprogram {
+    public Simulering my_Simulering = new Simulering();
+    public static void main(String[] args) {
+        new Huvudprogram();
+    }
+
+    public Huvudprogram() {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                /*
+                Skapar fönstret och lägger in "bilden"
+                */
+
+                JFrame frame = new JFrame("Rymdsimulering");
+                JLabel ForklaraGron = new JLabel(("Området mellan de gröna linjerna indikerar den beboeliga zonen."));
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setLayout(new BorderLayout());
+                frame.add(my_Simulering, BorderLayout.CENTER);
+                frame.add(MinSlider.min_Panel, BorderLayout.NORTH);
+                frame.add(ForklaraGron, BorderLayout.SOUTH);
+                frame.setSize(700,500);
+                frame.setLocationRelativeTo(null);
+                frame.setVisible(true);
+            }
+        });
+    }
+
+}
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+/**
+ * Created by Emil on 2016-12-15.
+ */
+
+/**
+ *  TODO:
+ *
+ */
+public class Simulering extends JPanel {
+
+    int RadieSol = 15;
+    int RadieJord = 3;
+    double XJord;
+    double YJord;
+    long Avstandstart = 149598023000L;
+    final double GKonstant = 0.00000000006673;
+    double MassaSol = 1.9891 * Math.pow(10, 30);
+    double MassaJord = 5.972 * Math.pow(10, 24);
+    double Vinkel = 0;
+    double Kraft;
+    double Avstand;
+    double Forandring;
+    MinSlider my_Slider = new MinSlider();
+
+
+
+
+
+
+    public Simulering() {
+        Timer timer = new Timer(15, new ActionListener() {  // Delay ändrar uppdateringsfrekvensen.
+            /* ActionListener innebär att en funktion aktiveras när något händer, i detta fallet när timern ger utslag*/
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Vinkel += Math.toRadians(1);
+                XJord = getWidth() / 2 + (1+(1 - Forandring))  * 100 * Math.cos(Vinkel);
+                YJord = getHeight() / 2 + (1+(1 - Forandring)) * 100 * Math.sin(Vinkel);
+                Forandring = MinSlider.Forandring;
+                RaknaAvstand();
+                repaint();  // Tar bort befintlig figur och ritar den med nya koordinater
+                my_Slider.RitaSlider();
+            }
+        });
+
+
+        timer.start(); // Kallar timer, vilket gör att funktionen ovan startas.
+    }
+    public void RaknaAvstand(){
+        Kraft = (GKonstant * Forandring)*(MassaJord*MassaSol)/Math.pow(Avstandstart, 2);
+        Avstand = Math.sqrt((GKonstant * MassaSol * MassaJord) / Kraft);
+        Avstand = Math.round(Avstand);
+    }
+
+    @Override   // Indikerar att detta ska göra överskriva något tidigare
+    public Dimension getPreferredSize() {
+        return new Dimension(300, 300);
+    }
+    /*
+    Sätter in dimensionerna för fönstret
+    de kan hämtas som int med hjälp av getWidth och getHeight
+    */
+
+    @Override   // Indikerar att detta ska göra överskriva något tidigare
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                            RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g2.setColor(Color.BLUE);
+        g2.fillOval((int) XJord - RadieJord, (int) YJord - RadieJord, RadieJord * 2, RadieJord * 2);
+
+        g2.setColor(Color.YELLOW);
+        g2.fillOval(getWidth() / 2 - RadieSol, getHeight() / 2 - RadieSol, RadieSol * 2, RadieSol * 2);
+
+        g2.setColor(Color.BLACK);
+        g2.drawLine(getWidth() / 2, getHeight() / 2 ,(int) XJord, (int) YJord );
+
+        g2.drawString("Avstånd = " + String.valueOf(Avstand) + " m.", 10, 30);
+
+        /*g2.setColor(Color.LIGHT_GRAY);
+        g2.setStroke(new BasicStroke(1));
+        g2.drawOval(getWidth() / 2  - 100, getHeight() / 2 - 100, 200, 200); */
+
+        g2.setColor(Color.GREEN);
+        g2.setStroke(new BasicStroke(1));
+        g2.drawOval(getWidth() / 2  - 82, getHeight() / 2 - 82, 82*2, 82*2);
+        g2.drawOval(getWidth() / 2  - 110, getHeight() / 2 - 110, 220, 220);
+
+    }
+
+}
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+
+/**
+ * Created by Emil on 2016-12-20.
+ */
+public class MinSlider {
+
+    int ForandringMax = 100;
+    int ForandringMin = 90;
+    int ForandringStart = 100;
+    public static double Forandring = 1;
+
+    JSlider ForandringSlide = new JSlider(JSlider.HORIZONTAL, ForandringMin, ForandringMax, ForandringStart);
+    public static JLabel SliderRubrik = new JLabel();
+    public static JPanel min_Panel = new JPanel();
+
+
+    public MinSlider() {
+        RitaSlider();
+    }
+
+    public void RitaSlider() {
+        ForandringSlide.setMajorTickSpacing(10);
+        ForandringSlide.setPaintTicks(true);
+        SliderRubrik.setText("Nuvarande forändringsfaktor på G: " + String.valueOf(Forandring));
+
+
+        min_Panel.setLayout(new BorderLayout());
+        min_Panel.add(ForandringSlide, BorderLayout.CENTER);
+        min_Panel.add(SliderRubrik, BorderLayout.NORTH);
+
+
+        Event e = new Event();
+        ForandringSlide.addChangeListener(e);
+
+
+
+    }
+
+
+    public class Event implements ChangeListener {
+        public void stateChanged(ChangeEvent e) {
+            Forandring = ForandringSlide.getValue();
+            Forandring /= 100;
+            SliderRubrik.setText("Nuvarande forändringsfaktor på G: " + String.valueOf(Forandring));
+        }
+    }
+}
+
+
